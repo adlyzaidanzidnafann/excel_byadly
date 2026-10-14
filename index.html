@@ -1,864 +1,473 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Excel - Spreadsheet</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mini Excel</title>
 <style>
-* { box-sizing: border-box; }
-
-:root {
-  --green: #217346;
-  --border: #d5d9de;
-  --header: #f2f4f6;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #fff;
-  color: #222;
-  font-size: 13px;
-}
-
-.topbar {
-  background: var(--green);
-  color: white;
-  padding: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-
-.brand {
-  font-size: 19px;
-  font-weight: bold;
-}
-
-.subtitle {
-  font-size: 11px;
-  margin-top: 4px;
-  opacity: .9;
-}
-
-button, select {
-  font: inherit;
-}
-
-button {
-  border: 1px solid #c9ced3;
-  border-radius: 4px;
-  background: white;
-  padding: 7px 10px;
-  cursor: pointer;
-  color: #222;
-}
-
-button:active { background: #dcebe2; }
-
-.top-actions {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-
-.top-actions button {
-  color: white;
-  background: #2e8558;
-  border-color: #77ad8c;
-}
-
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  padding: 8px;
-  border-bottom: 1px solid var(--border);
-  align-items: center;
-}
-
-.toolbar button {
-  min-width: 32px;
-  min-height: 32px;
-}
-
-.toolbar select {
-  height: 32px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0 5px;
-  max-width: 125px;
-}
-
-.color-control {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px;
-  height: 32px;
-}
-
-.color-control input {
-  width: 23px;
-  height: 23px;
-  padding: 0;
-  border: none;
-}
-
-.formula-area {
-  display: flex;
-  align-items: stretch;
-  gap: 6px;
-  padding: 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.name-box {
-  width: 64px;
-  text-align: center;
-  padding: 9px 2px;
-  background: var(--header);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  font-weight: bold;
-}
-
-.fx {
-  padding: 9px 2px;
-  font-weight: bold;
-  color: #666;
-  font-style: italic;
-}
-
-.formula-input {
-  min-width: 0;
-  flex: 1;
-  border: 1px solid var(--border);
-  padding: 8px;
-  outline-color: var(--green);
-  border-radius: 3px;
-}
-
-.sheet-info {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 7px 10px;
-  color: #555;
-  font-size: 11px;
-}
-
-.grid-container {
-  overflow: auto;
-  height: calc(100dvh - 255px);
-  min-height: 300px;
-  -webkit-overflow-scrolling: touch;
-}
-
-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  table-layout: fixed;
-  width: max-content;
-  min-width: 100%;
-}
-
-th, td {
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  height: 29px;
-  padding: 4px 7px;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-thead th {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  background: var(--header);
-  text-align: center;
-  font-weight: normal;
-  border-top: 1px solid var(--border);
-}
-
-.corner {
-  left: 0;
-  z-index: 5 !important;
-  width: 42px;
-  min-width: 42px;
-}
-
-.row-head {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  background: var(--header);
-  text-align: center;
-  width: 42px;
-  min-width: 42px;
-  font-weight: normal;
-}
-
-td {
-  width: 110px;
-  min-width: 110px;
-  background: white;
-  outline: none;
-}
-
-td.selected {
-  position: relative;
-  outline: 2px solid var(--green);
-  outline-offset: -2px;
-  z-index: 1;
-}
-
-td:focus {
-  outline: 2px solid var(--green);
-  outline-offset: -2px;
-}
-
-.tabs {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  border-top: 1px solid var(--border);
-  background: #f6f7f8;
-  padding: 4px 8px;
-  overflow-x: auto;
-}
-
-.tabs button {
-  border-radius: 0;
-  border: none;
-  border-bottom: 3px solid transparent;
-  background: transparent;
-  white-space: nowrap;
-}
-
-.tabs button.active {
-  background: white;
-  border-bottom-color: var(--green);
-  color: var(--green);
-  font-weight: bold;
-}
-
-.status {
-  padding: 7px 10px;
-  font-size: 11px;
-  color: #555;
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.hint {
-  background: #f5f8f6;
-  padding: 8px 10px;
-  border-top: 1px solid #e0e8e3;
-  color: #52645a;
-  font-size: 11px;
-}
-
-@media (max-width: 600px) {
-  .brand { font-size: 17px; }
-  .topbar { padding: 10px 8px; }
-  .toolbar { gap: 4px; padding: 6px; }
-  .toolbar button { padding: 6px 8px; }
-  .grid-container { height: calc(100dvh - 265px); }
+*{box-sizing:border-box}
+body{margin:0;font:14px Arial;color:#222}
+button,input,select{font:inherit}
+button{padding:7px 10px;background:white;border:1px solid #ccc;border-radius:4px;cursor:pointer}
+.top{background:#217346;color:white;padding:11px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{font-size:20px;font-weight:bold}
+.actions,.toolbar{display:flex;gap:5px;flex-wrap:wrap}
+.top button{background:#2c8053;color:white;border-color:#85ac95}
+.toolbar{padding:7px;border-bottom:1px solid #ddd;align-items:center}
+.toolbar button,.toolbar select{min-height:34px}
+.toolbar select{max-width:125px;padding:5px}
+.formula{display:flex;align-items:center;gap:6px;padding:8px;border-bottom:1px solid #ddd}
+#cellName{width:55px;text-align:center;padding:10px 2px;background:#eee;border:1px solid #ccc}
+#formulaInput{flex:1;min-width:0;padding:10px;border:1px solid #ccc}
+.grid{height:calc(100dvh - 295px);min-height:280px;overflow:auto}
+table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;table-layout:fixed}
+th,td{height:30px;border-right:1px solid #d4d4d4;border-bottom:1px solid #d4d4d4;padding:5px 7px;white-space:nowrap;overflow:hidden}
+thead th{position:sticky;top:0;z-index:3;background:#f1f2f4;text-align:center;font-weight:normal;border-top:1px solid #ddd}
+.corner,.rowhead{width:42px;min-width:42px;text-align:center;background:#f1f2f4}
+.corner{position:sticky;left:0;z-index:5}
+.rowhead{position:sticky;left:0;z-index:2}
+td{width:110px;min-width:110px;background:white;outline:none}
+td.selected{outline:2px solid #217346;outline-offset:-2px;position:relative;z-index:1}
+.info,.status{display:flex;justify-content:space-between;gap:8px;padding:8px;color:#555}
+.tabs{display:flex;background:#f3f4f5;padding:5px;overflow:auto}
+.tabs button{border:0;border-radius:0;background:transparent;white-space:nowrap}
+.tabs button.active{border-bottom:3px solid #217346;color:#217346;font-weight:bold;background:white}
+.status{font-size:12px}
+#formatModal{display:none;position:fixed;inset:0;background:#0008;z-index:20;align-items:center;justify-content:center;padding:12px}
+.dialog{background:white;border-radius:8px;width:min(520px,100%);max-height:90dvh;overflow:auto;box-shadow:0 8px 35px #0004}
+.dialogHead{padding:15px;background:#217346;color:white;display:flex;justify-content:space-between;align-items:center}
+.dialogHead button{background:transparent;color:white;border-color:#ffffff80}
+.formatTabs{display:flex;overflow:auto;border-bottom:1px solid #ddd}
+.formatTabs button{border:0;border-radius:0;white-space:nowrap}
+.formatTabs button.active{color:#217346;border-bottom:3px solid #217346;font-weight:bold}
+.panel{padding:15px;display:none}
+.panel.active{display:block}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.field input:not([type=color]):not([type=checkbox]),.field select{width:100%;padding:9px;border:1px solid #bbb;border-radius:4px;background:white}
+.field input[type=color]{width:55px;height:35px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.preview{padding:14px;text-align:center;border:1px solid #ccc;background:#f8f8f8;margin-bottom:12px}
+.dialogFoot{display:flex;justify-content:flex-end;gap:8px;padding:12px;border-top:1px solid #ddd}
+.primary{background:#217346;color:white;border-color:#217346}
+.borderChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.borderChoices button{padding:12px}
+@media(max-width:600px){
+ .top{padding:9px}.brand{font-size:17px}
+ .toolbar{padding:6px;gap:4px}
+ .grid{height:calc(100dvh - 300px)}
 }
 </style>
 </head>
-
 <body>
 
-<header class="topbar">
-  <div>
-    <div class="brand">▦ Mini Excel</div>
-    <div class="subtitle">Spreadsheet • Rumus Otomatis</div>
-  </div>
-  <div class="top-actions">
-    <button onclick="newWorkbook()">＋ Baru</button>
-    <button onclick="saveWorkbook()">💾 Simpan</button>
-    <button onclick="exportCSV()">⬇ CSV</button>
-  </div>
+<header class="top">
+ <div><div class="brand">▦ Mini Excel</div><small>Spreadsheet • Format Cells</small></div>
+ <div class="actions">
+  <button onclick="newBook()">＋ Baru</button>
+  <button onclick="saveBook()">💾 Simpan</button>
+  <button onclick="exportCSV()">↓ CSV</button>
+ </div>
 </header>
 
 <div class="toolbar">
-  <button onclick="formatCell('bold')" title="Tebal"><b>B</b></button>
-  <button onclick="formatCell('italic')" title="Miring"><i>I</i></button>
-  <button onclick="formatCell('underline')" title="Garis bawah">
-    <u>U</u>
-  </button>
-
-  <select id="alignSelect" onchange="setAlignment(this.value)">
-    <option value="left">Rata kiri</option>
-    <option value="center">Rata tengah</option>
-    <option value="right">Rata kanan</option>
-  </select>
-
-  <label class="color-control" title="Warna teks">
-    A
-    <input type="color" value="#000000"
-      onchange="setCellStyle('color',this.value)">
-  </label>
-
-  <label class="color-control" title="Warna latar">
-    ▰
-    <input type="color" value="#ffffff"
-      onchange="setCellStyle('backgroundColor',this.value)">
-  </label>
-
-  <button onclick="addRow()">＋ Baris</button>
-  <button onclick="addColumn()">＋ Kolom</button>
+ <button onclick="format('bold')"><b>B</b></button>
+ <button onclick="format('italic')"><i>I</i></button>
+ <button onclick="format('underline')"><u>U</u></button>
+ <select onchange="styleCell('textAlign',this.value)">
+  <option value="left">Rata kiri</option><option value="center">Rata tengah</option><option value="right">Rata kanan</option>
+ </select>
+ <select id="quickNumber" onchange="quickFormat(this.value)">
+  <option value="General">General</option>
+  <option value="Number">Number</option>
+  <option value="Currency">Rupiah (Rp)</option>
+  <option value="Accounting">Accounting</option>
+  <option value="Date">Tanggal</option>
+  <option value="Percentage">Persen</option>
+ </select>
+ <button onclick="openFormat()">Format Cells…</button>
+ <button onclick="addRow()">＋ Baris</button>
+ <button onclick="addCol()">＋ Kolom</button>
+ <button onclick="copyCell()">Salin</button>
+ <button onclick="pasteCell()">Tempel</button>
 </div>
 
-<div class="formula-area">
-  <div class="name-box" id="cellName">A1</div>
-  <div class="fx">fx</div>
-  <input id="formulaInput" class="formula-input"
-    placeholder="Masukkan data atau rumus, contoh: =SUM(A1:A5)"
-    autocomplete="off">
-  <button onclick="applyFormula()">✓</button>
+<div class="formula">
+ <b id="cellName">A1</b><i>fx</i>
+ <input id="formulaInput" placeholder="Nilai atau rumus, contoh: =$A$1*B1">
+ <button onclick="applyInput()">✓</button>
 </div>
 
-<div class="sheet-info">
-  <span id="sheetTitle">Sheet1</span>
-  <span>Klik sel untuk mengedit</span>
-</div>
+<div class="info"><span id="sheetTitle">Sheet1</span><span>Klik sel untuk memilih</span></div>
+<div class="grid"><table><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table></div>
+<div class="tabs" id="tabs"></div>
+<div class="status"><span id="status">Siap</span><span id="selectionInfo">Sel A1</span></div>
 
-<div class="grid-container" id="gridContainer">
-  <table id="sheetTable">
-    <thead><tr id="headerRow"></tr></thead>
-    <tbody id="sheetBody"></tbody>
-  </table>
-</div>
+<!-- Format Cells dialog -->
+<div id="formatModal">
+ <div class="dialog">
+  <div class="dialogHead"><b>Format Cells</b><button onclick="closeFormat()">✕</button></div>
+  <div class="formatTabs">
+   <button class="active" data-tab="number">Number</button>
+   <button data-tab="alignment">Alignment</button>
+   <button data-tab="font">Font</button>
+   <button data-tab="border">Border</button>
+   <button data-tab="fill">Fill</button>
+  </div>
 
-<div class="tabs" id="sheetTabs">
-  <button class="active" onclick="switchSheet(0)">Sheet1</button>
-  <button onclick="addSheet()">＋</button>
-</div>
+  <div class="panel active" id="panel-number">
+   <div class="field"><label>Category</label>
+    <select id="nf" onchange="numberPreview()">
+     <option>General</option><option>Number</option><option>Currency</option>
+     <option>Accounting</option><option>Date</option><option>Time</option>
+     <option>Percentage</option><option>Fraction</option>
+     <option>Scientific</option><option>Text</option>
+    </select>
+   </div>
+   <div class="field"><label>Sample / Preview</label><div class="preview" id="numPreview">1234.5</div></div>
+   <div class="two">
+    <div class="field"><label>Decimal places</label><select id="decimals" onchange="numberPreview()">
+     <option value="0">0</option><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option>
+    </select></div>
+    <div class="field"><label>Symbol</label><select id="symbol" onchange="numberPreview()">
+     <option value="IDR">Rp Indonesian</option><option value="USD">$ English (US)</option><option value="EUR">€ Euro</option><option value="none">None</option>
+    </select></div>
+   </div>
+   <div class="field"><label>Format code</label><input id="formatCode" value="General" oninput="customCode()"></div>
+   <small>Format angka hanya mengubah tampilan, bukan nilai aslinya.</small>
+  </div>
 
-<div class="status">
-  <span id="statusText">Siap</span>
-  <span id="selectionInfo">Sel A1</span>
-</div>
+  <div class="panel" id="panel-alignment">
+   <div class="field"><label>Horizontal</label><select id="horizontal">
+    <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
+   </select></div>
+   <div class="field"><label>Vertical</label><select id="vertical">
+    <option value="middle">Center</option><option value="top">Top</option><option value="bottom">Bottom</option>
+   </select></div>
+   <div class="field"><label><input id="wrap" type="checkbox"> Wrap Text</label></div>
+   <div class="field"><label>Text indent</label><input id="indent" type="number" min="0" max="10" value="0"></div>
+  </div>
 
-<div class="hint">
-  Tips: Ketik =SUM(A1:A5) untuk menjumlahkan data.
-  Tekan Enter untuk menyimpan isi sel.
+  <div class="panel" id="panel-font">
+   <div class="field"><label>Font</label><select id="fontName">
+    <option>Arial</option><option>Calibri</option><option>Aptos</option>
+    <option>Times New Roman</option><option>Georgia</option><option>Verdana</option>
+    <option>Tahoma</option><option>Courier New</option><option>Trebuchet MS</option>
+   </select></div>
+   <div class="two">
+    <div class="field"><label>Font style</label><select id="fontStyle">
+     <option value="normal">Regular</option><option value="bold">Bold</option>
+     <option value="italic">Italic</option><option value="bolditalic">Bold Italic</option>
+    </select></div>
+    <div class="field"><label>Size</label><select id="fontSize">
+     <option>8</option><option>9</option><option>10</option><option>11</option>
+     <option selected>12</option><option>14</option><option>16</option>
+     <option>18</option><option>20</option><option>24</option><option>36</option>
+    </select></div>
+   </div>
+   <div class="field"><label>Font color</label><input type="color" id="fontColor" value="#222222"></div>
+   <div class="field"><label>Underline</label><select id="underline">
+    <option value="none">None</option><option value="underline">Single</option><option value="double">Double</option>
+   </select></div>
+   <div class="field"><label><input type="checkbox" id="strike"> Strikethrough</label></div>
+  </div>
+
+  <div class="panel" id="panel-border">
+   <div class="field"><label>Border style</label><select id="borderStyle">
+    <option value="1px solid">Thin</option><option value="2px solid">Medium</option>
+    <option value="3px solid">Thick</option><option value="1px dashed">Dashed</option>
+    <option value="1px dotted">Dotted</option><option value="0 none">None</option>
+   </select></div>
+   <div class="field"><label>Border color</label><input type="color" id="borderColor" value="#333333"></div>
+   <div class="borderChoices">
+    <button onclick="borderPreset('all')">All Borders</button>
+    <button onclick="borderPreset('outer')">Outside Borders</button>
+    <button onclick="borderPreset('inner')">Inside Borders</button>
+    <button onclick="borderPreset('top')">Top Border</button>
+    <button onclick="borderPreset('bottom')">Bottom Border</button>
+    <button onclick="borderPreset('left')">Left Border</button>
+    <button onclick="borderPreset('right')">Right Border</button>
+    <button onclick="borderPreset('none')">No Border</button>
+   </div>
+   <small>Preset diterapkan pada sel yang dipilih.</small>
+  </div>
+
+  <div class="panel" id="panel-fill">
+   <div class="field"><label>Background color</label><input type="color" id="fillColor" value="#ffffff"></div>
+   <button onclick="$('fillColor').value='#ffffff'">No Fill / Putih</button>
+  </div>
+
+  <div class="dialogFoot">
+   <button onclick="closeFormat()">Batal</button>
+   <button class="primary" onclick="applyFormat()">OK</button>
+  </div>
+ </div>
 </div>
 
 <script>
-const INITIAL_ROWS = 30;
-const INITIAL_COLS = 12;
+const $=id=>document.getElementById(id);
+let R=30,C=12,active=0,sel={r:0,c:0},clipboard=null;
+let sheets=[newSheet("Sheet1")];
+let borderDraft=null;
 
-let rows = INITIAL_ROWS;
-let cols = INITIAL_COLS;
-let selected = { r: 0, c: 0 };
-let sheets = [];
-let activeSheet = 0;
-let clipboardCell = null;
-
-function makeSheet(name) {
-  return {
-    name,
-    data: {},
-    styles: {}
-  };
+function newSheet(name){return {name,data:{},styles:{}}}
+function sheet(){return sheets[active]}
+function colName(n){let s="";for(n++;n>0;n=Math.floor((n-1)/26))s=String.fromCharCode(65+(n-1)%26)+s;return s}
+function id(r,c){return colName(c)+(r+1)}
+function parseCell(ref){
+ const m=/^(\$?)([A-Z]+)(\$?)([1-9]\d*)$/i.exec(ref.trim());
+ if(!m)return null;
+ let c=0;for(const ch of m[2].toUpperCase())c=c*26+ch.charCodeAt(0)-64;
+ return {r:+m[4]-1,c:c-1,absC:!!m[1],absR:!!m[3]};
 }
-
-sheets.push(makeSheet("Sheet1"));
-
-function colName(n) {
-  let s = "";
-  n++;
-  while (n > 0) {
-    let rem = (n - 1) % 26;
-    s = String.fromCharCode(65 + rem) + s;
-    n = Math.floor((n - 1) / 26);
+function raw(r,c){return sheet().data[id(r,c)]??""}
+function put(r,c,v){const k=id(r,c);if(v==="")delete sheet().data[k];else sheet().data[k]=String(v)}
+function select(r,c){
+ sel={r,c};
+ document.querySelectorAll("td.selected").forEach(x=>x.classList.remove("selected"));
+ const td=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+ if(td)td.classList.add("selected");
+ $("cellName").textContent=id(r,c);$("formulaInput").value=raw(r,c);
+ $("selectionInfo").textContent="Sel "+id(r,c);
+}
+function build(){
+ $("head").innerHTML="<th class='corner'>#</th>";
+ for(let c=0;c<C;c++){let th=document.createElement("th");th.textContent=colName(c);$("head").appendChild(th)}
+ $("body").innerHTML="";
+ for(let r=0;r<R;r++){
+  let tr=document.createElement("tr"),th=document.createElement("th");
+  th.className="rowhead";th.textContent=r+1;tr.appendChild(th);
+  for(let c=0;c<C;c++){
+   let td=document.createElement("td");td.dataset.r=r;td.dataset.c=c;td.tabIndex=0;
+   td.onclick=()=>select(r,c);
+   td.ondblclick=()=>{td.contentEditable="true";td.textContent=raw(r,c);td.focus()};
+   td.onblur=()=>{if(td.contentEditable==="true"){td.contentEditable="false";put(r,c,td.textContent);render()}};
+   td.onkeydown=e=>{
+    if(e.key==="Enter"){e.preventDefault();if(td.contentEditable==="true"){td.contentEditable="false";put(r,c,td.textContent);render()}select(Math.min(R-1,r+1),c);focusSel()}
+    if(e.key==="Escape"&&td.contentEditable==="true"){td.contentEditable="false";render()}
+   };
+   tr.appendChild(td);
   }
-  return s;
+  $("body").appendChild(tr);
+ }
+ render();renderTabs();select(sel.r,sel.c);
 }
+function focusSel(){let td=document.querySelector(`td[data-r="${sel.r}"][data-c="${sel.c}"]`);if(td){td.focus();td.scrollIntoView({block:"nearest",inline:"nearest"})}}
 
-function cellId(r, c) {
-  return colName(c) + (r + 1);
-}
-
-function parseCell(ref) {
-  const m = /^([A-Z]+)([1-9]\d*)$/i.exec(ref.trim());
-  if (!m) return null;
-
-  let c = 0;
-  for (const ch of m[1].toUpperCase()) {
-    c = c * 26 + ch.charCodeAt(0) - 64;
-  }
-
-  return { r: Number(m[2]) - 1, c: c - 1 };
-}
-
-function currentSheet() {
-  return sheets[activeSheet];
-}
-
-function rawValue(r, c) {
-  return currentSheet().data[cellId(r, c)] ?? "";
-}
-
-function setRaw(r, c, value) {
-  const id = cellId(r, c);
-  if (value === "") {
-    delete currentSheet().data[id];
-  } else {
-    currentSheet().data[id] = String(value);
-  }
-}
-
-function buildGrid() {
-  const header = document.getElementById("headerRow");
-  const body = document.getElementById("sheetBody");
-
-  header.innerHTML = "<th class='corner'>#</th>";
-  for (let c = 0; c < cols; c++) {
-    const th = document.createElement("th");
-    th.textContent = colName(c);
-    th.style.width = "110px";
-    header.appendChild(th);
-  }
-
-  body.innerHTML = "";
-
-  for (let r = 0; r < rows; r++) {
-    const tr = document.createElement("tr");
-    const th = document.createElement("th");
-    th.className = "row-head";
-    th.textContent = r + 1;
-    tr.appendChild(th);
-
-    for (let c = 0; c < cols; c++) {
-      const td = document.createElement("td");
-      td.dataset.r = r;
-      td.dataset.c = c;
-      td.tabIndex = 0;
-      td.addEventListener("click", () => selectCell(r, c));
-      td.addEventListener("focus", () => selectCell(r, c));
-
-      td.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          selectCell(Math.min(rows - 1, r + 1), c);
-          focusSelected();
-        } else if (e.key === "Tab") {
-          e.preventDefault();
-          let nr = r, nc = c + 1;
-          if (nc >= cols) { nc = 0; nr = Math.min(rows - 1, r + 1); }
-          selectCell(nr, nc);
-          focusSelected();
-        } else if (e.key === "Delete" || e.key === "Backspace") {
-          if (document.activeElement === td) {
-            e.preventDefault();
-            setRaw(r, c, "");
-            renderValues();
-          }
-        } else if (e.ctrlKey && e.key.toLowerCase() === "c") {
-          clipboardCell = rawValue(r, c);
-        } else if (e.ctrlKey && e.key.toLowerCase() === "v") {
-          if (clipboardCell !== null) {
-            setRaw(r, c, clipboardCell);
-            renderValues();
-          }
-        }
-      });
-
-      td.addEventListener("dblclick", () => {
-        const value = rawValue(r, c);
-        td.textContent = value;
-        td.contentEditable = "true";
-        td.focus();
-      });
-
-      td.addEventListener("blur", () => {
-        if (td.contentEditable === "true") {
-          td.contentEditable = "false";
-          setRaw(r, c, td.textContent);
-          renderValues();
-        }
-      });
-
-      tr.appendChild(td);
+function evaluate(r,c,stack=new Set()){
+ const key=id(r,c),v=raw(r,c).trim();
+ if(!v.startsWith("=")){
+  if(v==="")return "";
+  if(/^[-+]?(?:\d+\.?\d*|\.\d+)$/.test(v))return Number(v);
+  return v;
+ }
+ if(stack.has(key))return "#CIRCULAR!";
+ stack.add(key);
+ try{
+  let ex=v.slice(1).toUpperCase();
+  ex=ex.replace(/\b(SUM|AVERAGE|AVG|MAX|MIN|COUNT)\(([^()]*)\)/g,(all,fn,args)=>{
+   let vals=[];
+   for(const part of args.split(",")){
+    const m=/^(\$?[A-Z]+\$?[1-9]\d*):(\$?[A-Z]+\$?[1-9]\d*)$/i.exec(part.trim());
+    if(m){
+     const a=parseCell(m[1]),b=parseCell(m[2]);
+     if(!a||!b)throw Error("REF");
+     if((Math.abs(a.r-b.r)+1)*(Math.abs(a.c-b.c)+1)>10000)throw Error("RANGE");
+     for(let rr=Math.min(a.r,b.r);rr<=Math.max(a.r,b.r);rr++)
+      for(let cc=Math.min(a.c,b.c);cc<=Math.max(a.c,b.c);cc++)vals.push(evaluate(rr,cc,new Set(stack)));
+    }else{
+     const p=parseCell(part.trim());
+     if(p)vals.push(evaluate(p.r,p.c,new Set(stack)));
+     else if(part.trim()!==""){let n=Number(part);if(Number.isFinite(n))vals.push(n);else throw Error("VALUE")}
     }
-    body.appendChild(tr);
-  }
-
-  renderValues();
-  renderTabs();
-  selectCell(selected.r, selected.c, false);
-}
-
-function evaluateCell(r, c, stack = new Set()) {
-  const id = cellId(r, c);
-  const raw = rawValue(r, c).trim();
-
-  if (!raw.startsWith("=")) {
-    if (raw === "") return "";
-    const n = Number(raw);
-    return raw !== "" && Number.isFinite(n) ? n : raw;
-  }
-
-  if (stack.has(id)) return "#CIRCULAR!";
-  stack.add(id);
-
-  try {
-    let expr = raw.slice(1).toUpperCase();
-
-    // Fungsi spreadsheet: SUM, AVERAGE, MAX, MIN, COUNT
-    expr = expr.replace(
-      /\b(SUM|AVERAGE|AVG|MAX|MIN|COUNT)\(([^()]*)\)/g,
-      (match, fn, args) => {
-        let values = [];
-
-        for (const arg of args.split(",")) {
-          const range = arg.trim().match(
-            /^([A-Z]+\d+):([A-Z]+\d+)$/
-          );
-
-          if (range) {
-            const a = parseCell(range[1]);
-            const b = parseCell(range[2]);
-
-            if (!a || !b) throw Error("REF");
-
-            for (let rr = Math.min(a.r,b.r);
-                 rr <= Math.max(a.r,b.r); rr++) {
-              for (let cc = Math.min(a.c,b.c);
-                   cc <= Math.max(a.c,b.c); cc++) {
-                values.push(evaluateCell(rr, cc, new Set(stack)));
-              }
-            }
-          } else {
-            const p = parseCell(arg.trim());
-            if (p) {
-              values.push(evaluateCell(p.r, p.c, new Set(stack)));
-            } else if (arg.trim() !== "") {
-              const n = Number(arg.trim());
-              if (Number.isFinite(n)) values.push(n);
-              else throw Error("VALUE");
-            }
-          }
-        }
-
-        const nums = values.filter(
-          v => typeof v === "number" && Number.isFinite(v)
-        );
-
-        if (fn === "COUNT") return nums.length;
-        if (fn === "SUM") return nums.reduce((a,b) => a+b, 0);
-        if (fn === "AVERAGE" || fn === "AVG")
-          return nums.length ? nums.reduce((a,b)=>a+b,0)/nums.length : 0;
-        if (fn === "MAX") return nums.length ? Math.max(...nums) : 0;
-        if (fn === "MIN") return nums.length ? Math.min(...nums) : 0;
-      }
-    );
-
-    // Ganti referensi sel seperti A1 dan B5 menjadi nilainya.
-    expr = expr.replace(/\b([A-Z]+\d+)\b/g, ref => {
-      const p = parseCell(ref);
-      if (!p) throw Error("REF");
-      const v = evaluateCell(p.r, p.c, new Set(stack));
-      if (v === "") return "0";
-      if (typeof v !== "number" || !Number.isFinite(v))
-        throw Error("VALUE");
-      return String(v);
-    });
-
-    // Hanya izinkan operasi matematika dasar.
-    if (!/^[\d+\-*/().\s%]+$/.test(expr))
-      throw Error("FORMULA");
-
-    const result = Function('"use strict"; return (' + expr + ')')();
-
-    if (!Number.isFinite(result)) throw Error("DIV/0");
-    return result;
-  } catch (e) {
-    if (String(e.message).includes("CIRCULAR")) return "#CIRCULAR!";
-    if (String(e.message).includes("DIV/0")) return "#DIV/0!";
-    if (String(e.message).includes("REF")) return "#REF!";
-    if (String(e.message).includes("VALUE")) return "#VALUE!";
-    return "#ERROR!";
-  }
-}
-
-function renderValues() {
-  document.querySelectorAll("#sheetBody td").forEach(td => {
-    const r = Number(td.dataset.r);
-    const c = Number(td.dataset.c);
-    const id = cellId(r, c);
-    const value = evaluateCell(r, c);
-
-    td.textContent = value === "" ? "" : String(value);
-    td.style.fontWeight = "";
-    td.style.fontStyle = "";
-    td.style.textDecoration = "";
-    td.style.color = "";
-    td.style.backgroundColor = "";
-    td.style.textAlign = "left";
-
-    const style = currentSheet().styles[id] || {};
-    Object.assign(td.style, style);
+   }
+   const ns=vals.filter(x=>typeof x==="number"&&Number.isFinite(x));
+   if(fn==="SUM")return ns.reduce((a,b)=>a+b,0);
+   if(fn==="COUNT")return ns.length;
+   if(fn==="AVERAGE"||fn==="AVG")return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:0;
+   if(fn==="MAX")return ns.length?Math.max(...ns):0;
+   return ns.length?Math.min(...ns):0;
   });
-
-  updateFormulaBar();
-  updateSelectionInfo();
-}
-
-function selectCell(r, c, render = true) {
-  selected = { r, c };
-
-  document.querySelectorAll("td.selected").forEach(td => {
-    td.classList.remove("selected");
+  ex=ex.replace(/(\$?[A-Z]+\$?[1-9]\d*)/g,ref=>{
+   const p=parseCell(ref);if(!p)throw Error("REF");
+   const x=evaluate(p.r,p.c,new Set(stack));
+   if(x==="")return "0";
+   if(typeof x!=="number"||!Number.isFinite(x))throw Error("VALUE");
+   return "("+x+")";
   });
+  if(!/^[\d+\-*/().\s%]+$/.test(ex))throw Error("FORMULA");
+  const result=Function('"use strict";return ('+ex+')')();
+  if(!Number.isFinite(result))throw Error("DIV0");
+  return result;
+ }catch(e){
+  const m=String(e.message);
+  if(m.includes("CIRCULAR"))return "#CIRCULAR!";
+  if(m.includes("DIV0"))return "#DIV/0!";
+  if(m.includes("REF"))return "#REF!";
+  if(m.includes("VALUE"))return "#VALUE!";
+  return "#ERROR!";
+ }
+}
 
-  const cell = document.querySelector(
-    `td[data-r="${r}"][data-c="${c}"]`
-  );
-
-  if (cell) cell.classList.add("selected");
-
-  if (render) {
-    updateFormulaBar();
-    updateSelectionInfo();
+function displayValue(value,fmt={}){
+ if(value===""||typeof value!=="number")return value;
+ const n=fmt.numFormat||"General",d=Number(fmt.decimals??2);
+ try{
+  if(n==="General")return String(value);
+  if(n==="Text")return String(value);
+  if(n==="Number")return new Intl.NumberFormat("id-ID",{minimumFractionDigits:d,maximumFractionDigits:d}).format(value);
+  if(n==="Currency"||n==="Accounting"){
+   const symbol=fmt.symbol||"IDR";
+   if(symbol==="none")return new Intl.NumberFormat("id-ID",{minimumFractionDigits:d,maximumFractionDigits:d}).format(value);
+   return new Intl.NumberFormat("id-ID",{style:"currency",currency:symbol,minimumFractionDigits:d,maximumFractionDigits:d}).format(value);
   }
-}
-
-function focusSelected() {
-  const cell = document.querySelector(
-    `td[data-r="${selected.r}"][data-c="${selected.c}"]`
-  );
-  if (cell) {
-    cell.focus();
-    cell.scrollIntoView({ block: "nearest", inline: "nearest" });
+  if(n==="Percentage")return new Intl.NumberFormat("id-ID",{style:"percent",minimumFractionDigits:d,maximumFractionDigits:d}).format(value);
+  if(n==="Date"||n==="Time"){
+   const date=new Date((value-25569)*86400000);
+   if(!Number.isFinite(date.getTime()))return String(value);
+   return n==="Date"?new Intl.DateTimeFormat("id-ID",{day:"2-digit",month:"2-digit",year:"numeric",timeZone:"UTC"}).format(date):new Intl.DateTimeFormat("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:"UTC"}).format(date);
   }
-}
-
-function updateFormulaBar() {
-  document.getElementById("cellName").textContent =
-    cellId(selected.r, selected.c);
-
-  document.getElementById("formulaInput").value =
-    rawValue(selected.r, selected.c);
-}
-
-function updateSelectionInfo() {
-  document.getElementById("selectionInfo").textContent =
-    "Sel " + cellId(selected.r, selected.c);
-}
-
-function applyFormula() {
-  const input = document.getElementById("formulaInput");
-  setRaw(selected.r, selected.c, input.value);
-  renderValues();
-  setStatus("Data berhasil diperbarui");
-}
-
-document.getElementById("formulaInput").addEventListener("keydown", e => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    applyFormula();
-    selectCell(Math.min(rows - 1, selected.r + 1), selected.c);
-    focusSelected();
+  if(n==="Scientific")return value.toExponential(d);
+  if(n==="Fraction"){
+   const whole=Math.trunc(value),x=Math.abs(value-whole);
+   let bestN=0,bestD=1,best=1;
+   for(let den=1;den<=100;den++){let num=Math.round(x*den),err=Math.abs(x-num/den);if(err<best){best=err;bestN=num;bestD=den}}
+   return (whole||value<0?whole+" ":"")+bestN+"/"+bestD;
   }
+ }catch(e){}
+ return String(value);
+}
+function render(){
+ document.querySelectorAll("#body td").forEach(td=>{
+  const r=+td.dataset.r,c=+td.dataset.c,k=id(r,c),s=sheet().styles[k]||{};
+  td.textContent=String(displayValue(evaluate(r,c),s));
+  Object.assign(td.style,{
+   fontWeight:"normal",fontStyle:"normal",textDecoration:"none",
+   fontFamily:"Arial",fontSize:"14px",color:"#222",backgroundColor:"white",
+   textAlign:"left",verticalAlign:"middle",whiteSpace:"nowrap",textIndent:"0",
+   borderTop:"",borderBottom:"",borderLeft:"",borderRight:""
+  },s);
+  td.style.fontSize=s.fontSize?(s.fontSize+"px"):"14px";
+ });
+ $("cellName").textContent=id(sel.r,sel.c);$("formulaInput").value=raw(sel.r,sel.c);
+ $("selectionInfo").textContent="Sel "+id(sel.r,sel.c);
+}
+function applyInput(){put(sel.r,sel.c,$("formulaInput").value);render();select(sel.r,sel.c);$("status").textContent="Data diperbarui"}
+$("formulaInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();applyInput();select(Math.min(R-1,sel.r+1),sel.c)}});
+
+function format(t){
+ const s=style();
+ if(t==="bold")s.fontWeight=s.fontWeight==="bold"?"normal":"bold";
+ if(t==="italic")s.fontStyle=s.fontStyle==="italic"?"normal":"italic";
+ if(t==="underline")s.textDecoration=s.textDecoration==="underline"?"none":"underline";
+ render();
+}
+function style(){const k=id(sel.r,sel.c);return sheet().styles[k]||(sheet().styles[k]={})}
+function styleCell(p,v){style()[p]=v;render()}
+function quickFormat(v){style().numFormat=v;style().decimals=2;render()}
+
+function openFormat(){
+ const s=style();
+ $("nf").value=s.numFormat||"General";
+ $("decimals").value=String(s.decimals??2);
+ $("symbol").value=s.symbol||"IDR";
+ $("formatCode").value=s.formatCode||$("nf").value;
+ $("horizontal").value=s.textAlign||"left";
+ $("vertical").value=s.verticalAlign||"middle";
+ $("wrap").checked=s.whiteSpace==="normal";
+ $("indent").value=parseInt(s.textIndent)||0;
+ $("fontName").value=s.fontFamily||"Arial";
+ $("fontSize").value=parseInt(s.fontSize)||12;
+ $("fontColor").value=s.color||"#222222";
+ $("fontStyle").value=s.fontWeight==="bold"&&s.fontStyle==="italic"?"bolditalic":s.fontWeight==="bold"?"bold":s.fontStyle==="italic"?"italic":"normal";
+ $("underline").value=s.textDecoration||"none";
+ $("strike").checked=(s.textDecoration||"").includes("line-through");
+ $("fillColor").value=s.backgroundColor||"#ffffff";
+ $("borderColor").value=s.borderColor||"#333333";
+ $("borderStyle").value=s.borderStyle||"1px solid";
+ borderDraft=null;
+ numberPreview();
+ $("formatModal").style.display="flex";
+}
+function closeFormat(){$("formatModal").style.display="none"}
+document.querySelectorAll(".formatTabs button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll(".formatTabs button").forEach(x=>x.classList.toggle("active",x===b));
+ document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id==="panel-"+b.dataset.tab));
 });
-
-function setStatus(message) {
-  document.getElementById("statusText").textContent = message;
+function numberPreview(){
+ const fmt=$("nf").value;
+ $("formatCode").value=fmt;
+ const test=1234.5;
+ $("numPreview").textContent=displayValue(test,{numFormat:fmt,decimals:+$("decimals").value,symbol:$("symbol").value});
 }
-
-function formatCell(type) {
-  const id = cellId(selected.r, selected.c);
-  const styles = currentSheet().styles;
-  if (!styles[id]) styles[id] = {};
-
-  const prop = {
-    bold: "fontWeight",
-    italic: "fontStyle",
-    underline: "textDecoration"
-  }[type];
-
-  const current = styles[id][prop];
-
-  if (type === "bold")
-    styles[id][prop] = current === "bold" ? "normal" : "bold";
-  if (type === "italic")
-    styles[id][prop] = current === "italic" ? "normal" : "italic";
-  if (type === "underline")
-    styles[id][prop] = current === "underline" ? "none" : "underline";
-
-  renderValues();
+function customCode(){
+ const code=$("formatCode").value;
+ const mapping={"General":"General","0":"Number","0.00":"Number","Rp #,##0.00":"Currency","dd/mm/yyyy":"Date","0%":"Percentage"};
+ if(mapping[code])$("nf").value=mapping[code];
 }
-
-function setAlignment(value) {
-  setCellStyle("textAlign", value);
+function borderPreset(which){borderDraft=which}
+function applyFormat(){
+ const s=style();
+ s.numFormat=$("nf").value;s.decimals=+$("decimals").value;s.symbol=$("symbol").value;
+ s.formatCode=$("formatCode").value;
+ s.textAlign=$("horizontal").value;s.verticalAlign=$("vertical").value;
+ s.whiteSpace=$("wrap").checked?"normal":"nowrap";
+ s.textIndent=(+$("indent").value*8)+"px";
+ s.fontFamily=$("fontName").value;s.fontSize=+$("fontSize").value;
+ s.color=$("fontColor").value;
+ const fs=$("fontStyle").value;
+ s.fontWeight=(fs==="bold"||fs==="bolditalic")?"bold":"normal";
+ s.fontStyle=(fs==="italic"||fs==="bolditalic")?"italic":"normal";
+ s.textDecoration=$("underline").value;
+ if($("strike").checked)s.textDecoration+=(s.textDecoration==="none"?"":" ")+"line-through";
+ s.backgroundColor=$("fillColor").value;
+ if(borderDraft){
+  const width=$("borderStyle").value,color=$("borderColor").value;
+  const val=width==="0 none"?"none":width+" "+color;
+  const sides=["borderTop","borderBottom","borderLeft","borderRight"];
+  if(borderDraft==="none")sides.forEach(x=>s[x]="none");
+  else if(borderDraft==="all")sides.forEach(x=>s[x]=val);
+  else if(borderDraft==="outer"){s.borderTop=val;s.borderBottom=val;s.borderLeft=val;s.borderRight=val}
+  else if(borderDraft==="inner"){s.borderTop="none";s.borderBottom=val;s.borderLeft="none";s.borderRight=val}
+  else s["border"+borderDraft[0].toUpperCase()+borderDraft.slice(1)]=val;
+ }
+ render();closeFormat();$("status").textContent="Format sel diperbarui";
 }
-
-function setCellStyle(property, value) {
-  const id = cellId(selected.r, selected.c);
-  if (!currentSheet().styles[id]) currentSheet().styles[id] = {};
-  currentSheet().styles[id][property] = value;
-  renderValues();
+function addRow(){R++;build()}
+function addCol(){C++;build()}
+function renderTabs(){
+ $("tabs").innerHTML="";
+ sheets.forEach((s,i)=>{let b=document.createElement("button");b.textContent=s.name;b.className=i===active?"active":"";b.onclick=()=>{active=i;sel={r:0,c:0};build()};$("tabs").appendChild(b)});
+ let b=document.createElement("button");b.textContent="＋";b.onclick=addSheet;$("tabs").appendChild(b);
+ $("sheetTitle").textContent=sheet().name;
 }
-
-function addRow() {
-  rows++;
-  buildGrid();
-  setStatus("Baris baru ditambahkan");
+function addSheet(){sheets.push(newSheet("Sheet"+(sheets.length+1)));active=sheets.length-1;sel={r:0,c:0};build()}
+function copyCell(){clipboard={value:raw(sel.r,sel.c),style:{...style()}};$("status").textContent="Sel disalin"}
+function pasteCell(){if(!clipboard)return;put(sel.r,sel.c,clipboard.value);sheet().styles[id(sel.r,sel.c)]={...clipboard.style};render();$("status").textContent="Sel ditempel"}
+function saveBook(){
+ try{localStorage.setItem("miniExcelV2",JSON.stringify({sheets,R,C}));$("status").textContent="Tersimpan di perangkat ini"}
+ catch(e){$("status").textContent="Penyimpanan gagal"}
 }
-
-function addColumn() {
-  cols++;
-  buildGrid();
-  setStatus("Kolom baru ditambahkan");
+function loadBook(){
+ try{const x=JSON.parse(localStorage.getItem("miniExcelV2"));if(x&&Array.isArray(x.sheets)){sheets=x.sheets;R=Math.max(30,+x.R||30);C=Math.max(12,+x.C||12)}}catch(e){}
 }
-
-function addSheet() {
-  const name = "Sheet" + (sheets.length + 1);
-  sheets.push(makeSheet(name));
-  activeSheet = sheets.length - 1;
-  selected = { r: 0, c: 0 };
-  buildGrid();
-  setStatus(name + " dibuat");
+function newBook(){if(!confirm("Buat spreadsheet baru?"))return;sheets=[newSheet("Sheet1")];active=0;R=30;C=12;sel={r:0,c:0};build()}
+function exportCSV(){
+ const lines=[];
+ for(let r=0;r<R;r++){
+  const line=[];
+  for(let c=0;c<C;c++){let v=displayValue(evaluate(r,c),sheet().styles[id(r,c)]||{}),x=String(v??"");if(/[",\r\n]/.test(x))x='"'+x.replace(/"/g,'""')+'"';line.push(x)}
+  lines.push(line.join(","));
+ }
+ const url=URL.createObjectURL(new Blob(["\uFEFF"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"}));
+ const a=document.createElement("a");a.href=url;a.download=sheet().name+".csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-
-function switchSheet(index) {
-  if (index >= sheets.length) return;
-  activeSheet = index;
-  selected = { r: 0, c: 0 };
-  buildGrid();
-}
-
-function renderTabs() {
-  const tabs = document.getElementById("sheetTabs");
-  tabs.innerHTML = "";
-
-  sheets.forEach((sheet, i) => {
-    const button = document.createElement("button");
-    button.textContent = sheet.name;
-    button.className = i === activeSheet ? "active" : "";
-    button.onclick = () => switchSheet(i);
-    tabs.appendChild(button);
-  });
-
-  const add = document.createElement("button");
-  add.textContent = "＋";
-  add.onclick = addSheet;
-  tabs.appendChild(add);
-
-  document.getElementById("sheetTitle").textContent =
-    currentSheet().name;
-}
-
-function saveWorkbook() {
-  try {
-    const payload = { sheets, rows, cols };
-    localStorage.setItem("miniExcelWorkbook", JSON.stringify(payload));
-    setStatus("Tersimpan di perangkat ini");
-  } catch (e) {
-    setStatus("Gagal menyimpan data");
-  }
-}
-
-function loadWorkbook() {
-  try {
-    const saved = localStorage.getItem("miniExcelWorkbook");
-    if (!saved) return;
-
-    const payload = JSON.parse(saved);
-    if (!Array.isArray(payload.sheets) || !payload.sheets.length) return;
-
-    sheets = payload.sheets;
-    rows = Math.max(INITIAL_ROWS, Number(payload.rows) || INITIAL_ROWS);
-    cols = Math.max(INITIAL_COLS, Number(payload.cols) || INITIAL_COLS);
-    activeSheet = 0;
-  } catch (e) {
-    console.log("Data simpanan tidak dapat dibuka");
-  }
-}
-
-function newWorkbook() {
-  if (!confirm("Buat spreadsheet baru? Data yang belum disimpan akan hilang.")) return;
-  sheets = [makeSheet("Sheet1")];
-  activeSheet = 0;
-  rows = INITIAL_ROWS;
-  cols = INITIAL_COLS;
-  selected = { r: 0, c: 0 };
-  buildGrid();
-  setStatus("Spreadsheet baru");
-}
-
-function exportCSV() {
-  const sheet = currentSheet();
-  const lines = [];
-
-  for (let r = 0; r < rows; r++) {
-    const values = [];
-
-    for (let c = 0; c < cols; c++) {
-      let v = evaluateCell(r, c);
-      if (v === "") v = "";
-
-      let str = String(v);
-      if (/[",\n;]/.test(str)) str = '"' + str.replace(/"/g, '""') + '"';
-      values.push(str);
-    }
-
-    lines.push(values.join(","));
-  }
-
-  const blob = new Blob(
-    ["\uFEFF" + lines.join("\r\n")],
-    { type: "text/csv;charset=utf-8;" }
-  );
-
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = sheet.name + ".csv";
-  a.click();
-  URL.revokeObjectURL(url);
-
-  setStatus("File CSV diunduh");
-}
-
-// Navigasi dengan tombol panah.
-document.addEventListener("keydown", e => {
-  if (e.target.id === "formulaInput") return;
-  if (e.target && e.target.isContentEditable) return;
-
-  const moves = {
-    ArrowUp: [-1, 0],
-    ArrowDown: [1, 0],
-    ArrowLeft: [0, -1],
-    ArrowRight: [0, 1]
-  };
-
-  if (moves[e.key]) {
-    e.preventDefault();
-    const [dr, dc] = moves[e.key];
-    selected.r = Math.max(0, Math.min(rows - 1, selected.r + dr));
-    selected.c = Math.max(0, Math.min(cols - 1, selected.c + dc));
-    selectCell(selected.r, selected.c);
-    focusSelected();
-  }
+document.addEventListener("keydown",e=>{
+ if(e.target===$("formulaInput")||e.target.isContentEditable)return;
+ const m={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};
+ if(m[e.key]){e.preventDefault();sel.r=Math.max(0,Math.min(R-1,sel.r+m[e.key][0]));sel.c=Math.max(0,Math.min(C-1,sel.c+m[e.key][1]));select(sel.r,sel.c);focusSel()}
 });
-
-loadWorkbook();
-buildGrid();
+loadBook();build();
 </script>
-
 </body>
 </html>
-
